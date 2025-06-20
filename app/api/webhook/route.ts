@@ -4,7 +4,6 @@ import { sendWelcomeAboardTemplate } from '@/lib/whatsapp'
 import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 import { NextRequest } from 'next/server'
-import pool from "@/lib/db";
 
 const prisma = new PrismaClient()
 
@@ -125,48 +124,14 @@ async function handleIncomingMessage(
   message: WhatsAppMessage,
 ) {
   try {
-
-    try {
-    const client = await pool.connect();
-    await client.query("SELECT NOW()"); // simple lightweight query
-    client.release();
-    console.log("✅ PostgreSQL is connected!");
-    
-  } catch (error: any) {
-    console.error("❌ PostgreSQL connection error:", error.message);
-  
-  }
     // Check if user exists, create if not
-    // console.log('Checking user:', phoneNumber)
-    // let user = await prisma.user.findUnique({
-    //   where: { mobileNumber: phoneNumber },
-    // })
-    //let mobileNumber=phoneNumber; 
-       // Query user by phone
-    // const result = await pool.query(
-    //   "SELECT * FROM user WHERE mobileNumber = $1 LIMIT 1",
-    //   [mobileNumber]
-    // );
+    console.log('Checking user:', phoneNumber)
+    let user = await prisma.user.findUnique({
+      where: { mobileNumber: phoneNumber },
+    })
+    
 
-      const result2 = await pool.query(`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-        AND table_type = 'BASE TABLE';
-    `);
-
-    const tables = result2.rows.map(row => row.table_name);
-    console.log("📦 All tables:", tables);
-
-//     const result = await pool.query('SELECT * FROM "User" LIMIT 1');
-// const user = result.rows[0];
-// console.log("✅ User from DB:", user);
-  const result = await pool.query(
-    'SELECT * FROM "User" WHERE "mobileNumber" = $1 LIMIT 1',
-    [phoneNumber]
-  );
-  const user = result.rows[0];
-  console.log("✅ Found User:", user);
+  console.log("User:", user);
 
     if (!user) {
       // Create a new user with minimal info
